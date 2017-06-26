@@ -19,7 +19,7 @@ def main(arguments):
 
 	predict_file = open(args.predict)
   	predict_data = np.genfromtxt(predict_file, dtype=int, delimiter=',')
-	predict_data = ml.predictSVMpredict_data)
+	predict_data = ml.predictSVM(predict_data)
 
 	with open("predict_SVM.csv",'w') as f:
         np.savetxt(f, predict_data.astype(int), fmt='%i', delimiter=',')
