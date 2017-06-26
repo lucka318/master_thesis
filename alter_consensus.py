@@ -16,7 +16,7 @@ def genome_preprocessing(reference_file):
 		content = f.readlines()
 	content = [x.strip() for x in content]
 	genome=''.join(content[1:])
-	return genome
+	return content[0], genome
 
 def main(arguments):
 
@@ -51,7 +51,7 @@ def main(arguments):
 	for i in range(0,x_coord):
 		homopolymer_coord_dict[homopolymer_coord[i][0]] = Y_[i][0]
 
-	genome = genome_preprocessing(args.con)
+	name,genome = genome_preprocessing(args.con)
 	# print(genome[0:15])
 	# print(len(genome))
 
@@ -71,6 +71,7 @@ def main(arguments):
 			i+=1
 
 	l = open(args.out, 'w')
+	l.write(name)
 	l.write(new_gen)
 	l.close()
 	print(len(new_gen))
