@@ -71,7 +71,7 @@ def main(arguments):
 			i+=1
 
 	l = open(args.out, 'w')
-	l.write(name)
+	l.write(name + '\n')
 	l.write(new_gen)
 	l.close()
 	print(len(new_gen))
