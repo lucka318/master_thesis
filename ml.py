@@ -41,7 +41,7 @@ def trainSVM(train_data,var):
     clf = GridSearchCV(svm,tuned_parameters,iid=False)
     clf.fit(X_train,Y_train.ravel())
 
-    joblib.dump(clf,'SVM.pkl')
+    joblib.dump(clf,'classifiers/SVM.pkl')
     print(clf.score(X_test,Y_test))
 
 def testSVM(test_data,var):
@@ -58,12 +58,12 @@ def testSVM(test_data,var):
     #_ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
     _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42)
 
-    clf = joblib.load('SVM.pkl')
+    clf = joblib.load('classifiers/SVM.pkl')
     print(clf.score(X_test,Y_test))
 
 def predictSVM(predict_data):
 
-    clf = joblib.load('SVM.pkl')
+    clf = joblib.load('classifiers/SVM.pkl')
     y_c = predict_data.shape[1]
     X_predict = predict_data[:,0:y_c - 3]
     Y_predict = clf.predict(X_predict)
@@ -94,7 +94,7 @@ def trainRFC(train_data,var):
     clf = GridSearchCV(rfc,param_grid,iid=False)
     clf.fit(X_train,Y_train.ravel())
 
-    joblib.dump(clf,'RFC.pkl')
+    joblib.dump(clf,'classifiers/RFC.pkl')
     print(clf.score(X_test,Y_test))
 
 def testRFC(test_data,var):
@@ -111,12 +111,12 @@ def testRFC(test_data,var):
     #_ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
     _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42)
 
-    clf = joblib.load('RFC.pkl')
+    clf = joblib.load('classifiers/RFC.pkl')
     print(clf.score(X_test,Y_test))
 
 def predictRFC(predict_data):
 
-    clf = joblib.load('RFC.pkl')
+    clf = joblib.load('classifiers/RFC.pkl')
     y_c = predict_data.shape[1]
     X_predict = predict_data[:,0:y_c - 3]
     Y_predict = clf.predict(X_predict)
@@ -146,7 +146,7 @@ def trainGBC(train_data,var):
     clf = GridSearchCV(gb_gs,gb_grid_params,iid=False);
     clf.fit(X_train,Y_train.ravel())
 
-    joblib.dump(clf,'GBC.pkl')
+    joblib.dump(clf,'classifiers/GBC.pkl')
     print(clf.score(X_test,Y_test))
 
 def testGBC(test_data,var):
@@ -163,12 +163,12 @@ def testGBC(test_data,var):
     #_ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
     _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42)
 
-    clf = joblib.load('RFC.pkl')
+    clf = joblib.load('classifiers/GBC.pkl')
     print(clf.score(X_test,Y_test))
 
 def predictGBC(predict_data):
 
-    clf = joblib.load('RFC.pkl')
+    clf = joblib.load('classifiers/GBC.pkl')
     y_c = predict_data.shape[1]
     X_predict = predict_data[:,0:y_c - 3]
     Y_predict = clf.predict(X_predict)
