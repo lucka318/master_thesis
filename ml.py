@@ -8,7 +8,8 @@ import argparse
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.model_selection import GridSearchCV,train_test_split
+from sklearn.grid_search import GridSearchCV
+from sklearn.cross_validation import train_test_split
 from sklearn.externals import joblib
 
 class_freq_n = 5
