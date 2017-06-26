@@ -23,9 +23,9 @@ def main(arguments):
 
 	test_file = open(args.test)
   	test_data = np.genfromtxt(test_file, dtype=int, delimiter=',')
-	ml.testSVM(test_data,args.num)
-	ml.testRFC(test_data,args.num)
-	ml.testGBC(test_data,args.num)
+	ml.testSVM(test_data,int(args.num))
+	ml.testRFC(test_data,int(args.num))
+	ml.testGBC(test_data,int(args.num))
 
 
 if __name__ == '__main__':
