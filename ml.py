@@ -34,7 +34,8 @@ def trainSVM(train_data,var):
     print("Class frequencies:")
     print(class_freq)
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
+    #X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
+    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42)
     tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4], 'C': [1, 10, 100, 1000]}, {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
     svm = SVC()
     clf = GridSearchCV(svm,tuned_parameters,iid=False)
@@ -54,7 +55,8 @@ def testSVM(test_data,var):
     class_freq = dict(zip(unique, counts))
     print(class_freq)
 
-    _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
+    #_ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
+    _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42)
 
     clf = joblib.load('SVM.pkl')
     print(clf.score(X_test,Y_test))
@@ -81,7 +83,8 @@ def trainRFC(train_data,var):
     print("Class frequencies:")
     print(class_freq)
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
+    #X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
+    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42)
     param_grid = {"n_estimators"      : [100,200,300],
            "criterion"         : ["gini"],
            "max_features"      : [3, 4, 5],
@@ -105,7 +108,8 @@ def testRFC(test_data,var):
     class_freq = dict(zip(unique, counts))
     print(class_freq)
 
-    _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
+    #_ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
+    _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42)
 
     clf = joblib.load('RFC.pkl')
     print(clf.score(X_test,Y_test))
@@ -132,7 +136,8 @@ def trainGBC(train_data,var):
     print("Class frequencies:")
     print(class_freq)
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
+    #X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
+    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42)
     gb_grid_params = {"n_estimators": [200,300,400],
              'learning_rate': [0.05, 0.02, 0.01],
              'max_depth': [4, 6, 8],
@@ -155,7 +160,8 @@ def testGBC(test_data,var):
     class_freq = dict(zip(unique, counts))
     print(class_freq)
 
-    _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
+    #_ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
+    _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42)
 
     clf = joblib.load('RFC.pkl')
     print(clf.score(X_test,Y_test))
