@@ -33,7 +33,7 @@ def trainSVM(train_data,var):
     print("Class frequencies:")
     print(class_freq)
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.01, random_state=42, stratify=Y_)
+    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
     tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4], 'C': [1, 10, 100, 1000]}, {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
     svm = SVC()
     clf = GridSearchCV(svm,tuned_parameters,iid=False)
@@ -80,7 +80,7 @@ def trainRFC(train_data,var):
     print("Class frequencies:")
     print(class_freq)
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.01, random_state=42, stratify=Y_)
+    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
     param_grid = {"n_estimators"      : [100,200,300],
            "criterion"         : ["gini"],
            "max_features"      : [3, 4, 5],
@@ -131,7 +131,7 @@ def trainGBC(train_data,var):
     print("Class frequencies:")
     print(class_freq)
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.01, random_state=42, stratify=Y_)
+    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
     gb_grid_params = {"n_estimators": [200,300,400],
              'learning_rate': [0.05, 0.02, 0.01],
              'max_depth': [4, 6, 8],
