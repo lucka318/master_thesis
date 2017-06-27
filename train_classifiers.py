@@ -25,7 +25,6 @@ def main(arguments):
   	train_data = np.genfromtxt(train_file, dtype=int, delimiter=',')
 	ml.trainSVM(train_data,int(args.num))
 	ml.trainRFC(train_data,int(args.num))
-	ml.trainGBC(train_data,int(args.num))
 
 
 if __name__ == '__main__':

@@ -26,10 +26,6 @@ def main(arguments):
 	with open("predict_RFC.csv",'w') as f:
 		np.savetxt(f, predict_data.astype(int), fmt='%i', delimiter=',')
 
-	predict_data = ml.predictGBC(predict_data)
-	with open("predict_GBC.csv",'w') as f:
-		np.savetxt(f, predict_data.astype(int), fmt='%i', delimiter=',')
-
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
