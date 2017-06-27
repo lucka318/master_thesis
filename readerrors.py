@@ -2,6 +2,8 @@ import numpy as np
 import pysam
 import re
 from collections import defaultdict
+from Bio import SeqIO
+import time
 
 class State:
 	on_on = 0
@@ -64,338 +66,362 @@ def get_cigar_string(cigar_string):
 
 def readerrors(ref, reads):
 
-	genome = genome_preprocessing(ref) + 'X'
-	content = pysam.AlignmentFile(reads)
-
 	freq_dict = {}
 	regions_dict = defaultdict(list)
 
 	#track max homopolymer size
 	ref_max = 0
 	read_max = 0
-	for r in content.fetch(until_eof=True):
 
-# 		#ako se read nije namapirao na referencu
- 		if r.cigarstring is None:
- 			continue
+	fasta_sequences = SeqIO.parse(open(ref),'fasta')
 
- 		cigar = get_cigar_string(r.cigarstring)
+	indent = 0 # globalni pomak po referenci
 
-		#set up necessary variables
-		#current pointers, they show us which positions we are looking at
-		reference_pointer = r.pos
-		read_pointer = 0
-		cigar_pointer = 0
+	for seq in fasta_sequences:
 
-		#length of homopolymers
-		read_homopolymer = 0
-		ref_homopolymer = 0
+		seq_id, sequence = seq.id, str(seq.seq) + 'X'
+		content = pysam.AlignmentFile(reads)
 
-		#coordinates of homopolymers
-		ref_begin = 0
-		ref_end = 0
+		for r in content.fetch(until_eof=True):
 
-		#homopolymer letters. if they exist, they should never be different (except if one of them is empty)
-		read_letter = ''
-		ref_letter = ''
+			#ako se read nije namapirao na referencu
+			if r.cigarstring is None:
+	 			continue
 
-		#read sequence
-		read = r.seq + 'X'
+	 		# ako se read nije namapirao na ovaj kromosom
+			if(content.getrname(r.reference_id) != seq_id):
+				continue
 
-		#starting state
-		state = State.off_off
+	 		cigar = get_cigar_string(r.cigarstring)
+
+			#set up necessary variables
+			#current pointers, they show us which positions we are looking at
+			sequence_pointer = r.pos
+			reference_pointer = r.pos + indent
+			read_pointer = 0
+			cigar_pointer = 0
+
+			#length of homopolymers
+			read_homopolymer = 0
+			ref_homopolymer = 0
+
+			#coordinates of homopolymers
+			ref_begin = 0
+			ref_end = 0
+
+			#homopolymer letters. if they exist, they should never be different (except if one of them is empty)
+			read_letter = ''
+			ref_letter = ''
+
+			#read sequence
+			read = r.seq + 'X'
+
+			#starting state
+			state = State.off_off
 
 
-		while(cigar_pointer < len(cigar)):
+			while(cigar_pointer < len(cigar)):
 
-			if(cigar[cigar_pointer] == 'M'):
+				if(cigar[cigar_pointer] == 'M'):
 
-			#not a read nor a reference has a detected homopolymer
-				if(state == State.off_off):
-					if(read[read_pointer] == read[read_pointer + 1]):
-						read_letter = read[read_pointer]
-						read_homopolymer += 1
-						state = State.on_off
-
-						if(genome[reference_pointer] == read_letter):
-							ref_homopolymer += 1
-							ref_letter = read_letter
-							state = State.on_on
-							ref_begin = reference_pointer
-
-					elif(genome[reference_pointer] == genome[reference_pointer + 1]):
-						ref_homopolymer += 1
-						ref_letter = genome[reference_pointer]
-						state = State.off_on
-						ref_begin = reference_pointer
-
-						if(read[read_pointer] == ref_letter):
-							read_letter = ref_letter
+				#not a read nor a reference has a detected homopolymer
+					if(state == State.off_off):
+						if(read[read_pointer] == read[read_pointer + 1]):
+							read_letter = read[read_pointer]
 							read_homopolymer += 1
-							state = State.on_on
+							state = State.on_off
 
-					reference_pointer += 1
-					read_pointer += 1
-					cigar_pointer += 1
+							if(sequence[sequence_pointer] == read_letter):
+								ref_homopolymer += 1
+								ref_letter = read_letter
+								state = State.on_on
+								ref_begin = reference_pointer
 
-				# we have a homopolymer in the read, but not in the reference(or ref homopolymer ended)
-				elif(state == State.on_off):
-
-					#if homopolymer in read continues
-					if(read[read_pointer] == read_letter):
-						read_homopolymer += 1
-						#if we didn't found a homopolymer in the reference by now, check
-						if(ref_homopolymer == 0 and genome[reference_pointer] == read_letter):
-							ref_letter = read_letter
+						elif(sequence[sequence_pointer] == sequence[sequence_pointer + 1]):
 							ref_homopolymer += 1
-							state = State.on_on
+							ref_letter = sequence[sequence_pointer]
+							state = State.off_on
 							ref_begin = reference_pointer
+
+							if(read[read_pointer] == ref_letter):
+								read_letter = ref_letter
+								read_homopolymer += 1
+								state = State.on_on
 
 						reference_pointer += 1
 						read_pointer += 1
 						cigar_pointer += 1
+						sequence_pointer += 1
 
-					else:
-						#here we don't update pointers so we can check them in off_off state
-						state = State.off_off
+					# we have a homopolymer in the read, but not in the reference(or ref homopolymer ended)
+					elif(state == State.on_off):
 
-						data = (ref_homopolymer, read_homopolymer, read_letter)
-						if(freq_dict.has_key(data)):
-							freq_dict[data] += 1
+						#if homopolymer in read continues
+						if(read[read_pointer] == read_letter):
+							read_homopolymer += 1
+							#if we didn't found a homopolymer in the reference by now, check
+							if(ref_homopolymer == 0 and sequence[sequence_pointer] == read_letter):
+								ref_letter = read_letter
+								ref_homopolymer += 1
+								state = State.on_on
+								ref_begin = reference_pointer
+
+							reference_pointer += 1
+							read_pointer += 1
+							cigar_pointer += 1
+							sequence_pointer += 1
+
 						else:
-							freq_dict[data] = 1
+							#here we don't update pointers so we can check them in off_off state
+							state = State.off_off
 
-						ref_coordinates = (ref_begin, ref_end)
-						regions_dict[ref_coordinates].append(read_homopolymer)
+							data = (ref_homopolymer, read_homopolymer, read_letter)
+							if(freq_dict.has_key(data)):
+								freq_dict[data] += 1
+							else:
+								freq_dict[data] = 1
+
+							ref_coordinates = (ref_begin, ref_end)
+							regions_dict[ref_coordinates].append(read_homopolymer)
 
 
-						ref_max = max(ref_max, ref_homopolymer)
-						read_max = max(read_max, read_homopolymer)
+							ref_max = max(ref_max, ref_homopolymer)
+							read_max = max(read_max, read_homopolymer)
 
-						ref_begin = 0
-						ref_end = 0
-						read_homopolymer = 0
-						ref_homopolymer = 0
-						read_letter = ''
-						ref_letter = ''
+							ref_begin = 0
+							ref_end = 0
+							read_homopolymer = 0
+							ref_homopolymer = 0
+							read_letter = ''
+							ref_letter = ''
 
-				# we have a homopolymer in the reference, but not in the read (or read homopolymer ended)
-				elif(state == State.off_on):
+					# we have a homopolymer in the reference, but not in the read (or read homopolymer ended)
+					elif(state == State.off_on):
 
-					#if homopolymer in reference continues
-					if(genome[reference_pointer] == ref_letter):
-						ref_homopolymer += 1
+						#if homopolymer in reference continues
+						if(sequence[sequence_pointer] == ref_letter):
+							ref_homopolymer += 1
+							if(read_homopolymer == 0 and read[read_pointer] == ref_letter):
+								read_letter = ref_letter
+								read_homopolymer += 1
+								state = State.on_on
+
+							reference_pointer += 1
+							read_pointer += 1
+							cigar_pointer += 1
+							sequence_pointer += 1
+
+						else:
+							#here we don't update pointers so we can check them in off_off state
+							state = State.off_off
+							ref_end = reference_pointer
+
+							data = (ref_homopolymer, read_homopolymer, ref_letter)
+							if(freq_dict.has_key(data)):
+								freq_dict[data] += 1
+							else:
+								freq_dict[data] = 1
+
+							ref_coordinates = (ref_begin, ref_end)
+							regions_dict[ref_coordinates].append(read_homopolymer)
+
+							ref_max = max(ref_max, ref_homopolymer)
+							read_max = max(read_max, read_homopolymer)
+
+							ref_begin = 0
+							ref_end = 0
+							read_homopolymer = 0
+							ref_homopolymer = 0
+							read_letter = ''
+							ref_letter = ''
+
+					elif(state == State.on_on):
+						#print("ON_ON")
+						# if read homopolymer continues
+						if(read[read_pointer] == read_letter and sequence[sequence_pointer] == ref_letter):
+							read_homopolymer += 1
+							ref_homopolymer += 1
+
+							reference_pointer += 1
+							read_pointer += 1
+							cigar_pointer += 1
+							sequence_pointer += 1
+
+						elif(read[read_pointer] == read_letter):
+							read_homopolymer += 1
+							state = State.on_off
+
+							ref_end = reference_pointer
+
+							reference_pointer += 1
+							read_pointer += 1
+							cigar_pointer += 1
+							sequence_pointer += 1
+
+						elif(sequence[sequence_pointer] == ref_letter):
+							ref_homopolymer += 1
+							state = State.off_on
+
+							reference_pointer += 1
+							read_pointer += 1
+							cigar_pointer += 1
+							sequence_pointer += 1
+
+						else:
+							state = State.off_off
+
+							ref_end = reference_pointer
+
+							data = (ref_homopolymer, read_homopolymer, read_letter)
+							if(freq_dict.has_key(data)):
+								freq_dict[data] += 1
+							else:
+								freq_dict[data] = 1
+
+							ref_coordinates = (ref_begin, ref_end)
+							regions_dict[ref_coordinates].append(read_homopolymer)
+
+							ref_max = max(ref_max, ref_homopolymer)
+							read_max = max(read_max, read_homopolymer)
+
+							ref_begin = 0
+							ref_end = 0
+
+							read_homopolymer = 0
+							ref_homopolymer = 0
+							read_letter = ''
+							ref_letter = ''
+
+				elif(cigar[cigar_pointer] == 'I'):
+
+					if(state == State.off_off):
+						#print("OFF_OFF")
+						if(read[read_pointer] == read[read_pointer + 1]):
+							read_letter = read[read_pointer]
+							read_homopolymer += 1
+							state = State.on_off
+
+						read_pointer += 1
+						cigar_pointer += 1
+						# we have a homopolymer in the read, but not in the reference(or ref homopolymer ended)
+					elif(state == State.on_off):
+						#print("ON_OFF")
+						if(read[read_pointer] == read_letter):
+							read_homopolymer += 1
+							read_pointer += 1
+							cigar_pointer += 1
+						else:
+							state = State.off_off
+
+							data = (ref_homopolymer, read_homopolymer, read_letter)
+							if(freq_dict.has_key(data)):
+								freq_dict[data] += 1
+							else:
+								freq_dict[data] = 1
+
+							ref_coordinates = (ref_begin, ref_end)
+							regions_dict[ref_coordinates].append(read_homopolymer)
+
+							ref_max = max(ref_max, ref_homopolymer)
+							read_max = max(read_max, read_homopolymer)
+
+							ref_begin = 0
+							ref_end = 0
+
+							read_homopolymer = 0
+							ref_homopolymer = 0
+							read_letter = ''
+							ref_letter = ''
+
+					elif(state == State.off_on):
+						#print("OFF_ON")
 						if(read_homopolymer == 0 and read[read_pointer] == ref_letter):
 							read_letter = ref_letter
 							read_homopolymer += 1
 							state = State.on_on
-
-						reference_pointer += 1
 						read_pointer += 1
 						cigar_pointer += 1
 
-					else:
-						#here we don't update pointers so we can check them in off_off state
-						state = State.off_off
-						ref_end = reference_pointer
-
-						data = (ref_homopolymer, read_homopolymer, ref_letter)
-						if(freq_dict.has_key(data)):
-							freq_dict[data] += 1
+					elif(state == State.on_on):
+						#print("ON_ON")
+						if(read[read_pointer] == read_letter):
+							read_homopolymer += 1
 						else:
-							freq_dict[data] = 1
-
-						ref_coordinates = (ref_begin, ref_end)
-						regions_dict[ref_coordinates].append(read_homopolymer)
-
-						ref_max = max(ref_max, ref_homopolymer)
-						read_max = max(read_max, read_homopolymer)
-
-						ref_begin = 0
-						ref_end = 0
-						read_homopolymer = 0
-						ref_homopolymer = 0
-						read_letter = ''
-						ref_letter = ''
-
-				elif(state == State.on_on):
-					#print("ON_ON")
-					# if read homopolymer continues
-					if(read[read_pointer] == read_letter and genome[reference_pointer] == ref_letter):
-						read_homopolymer += 1
-						ref_homopolymer += 1
-
-						reference_pointer += 1
+							state = State.off_on
 						read_pointer += 1
 						cigar_pointer += 1
 
-					elif(read[read_pointer] == read_letter):
-						read_homopolymer += 1
-						state = State.on_off
 
-						ref_end = reference_pointer
-
+				elif(cigar[cigar_pointer] == 'D'):
+					if(state == State.off_off):
+						#print("OFF_OFF")
+						if(sequence[sequence_pointer] == sequence[sequence_pointer + 1]):
+							ref_homopolymer += 1
+							ref_letter = sequence[sequence_pointer]
+							ref_begin = reference_pointer
+							state = State.off_on
 						reference_pointer += 1
-						read_pointer += 1
 						cigar_pointer += 1
-
-					elif(genome[reference_pointer] == ref_letter):
-						ref_homopolymer += 1
-						state = State.off_on
-
+						sequence_pointer += 1
+						# we have a homopolymer in the read, but not in the reference(or ref homopolymer ended)
+					elif(state == State.on_off):
+						#print("ON_OFF")
+						if(ref_homopolymer == 0 and sequence[sequence_pointer] == read_letter):
+							ref_letter = read_letter
+							ref_homopolymer += 1
+							state = State.on_on
+							ref_begin = reference_pointer
 						reference_pointer += 1
-						read_pointer += 1
 						cigar_pointer += 1
+						sequence_pointer += 1
 
-					else:
-						state = State.off_off
-
-						ref_end = reference_pointer
-
-						data = (ref_homopolymer, read_homopolymer, read_letter)
-						if(freq_dict.has_key(data)):
-							freq_dict[data] += 1
+					elif(state == State.off_on):
+						#rint("OFF_ON")
+						if(sequence[sequence_pointer] == ref_letter):
+							ref_homopolymer += 1
+							reference_pointer += 1
+							cigar_pointer += 1
+							sequence_pointer += 1
 						else:
-							freq_dict[data] = 1
+							state = State.off_off
 
-						ref_coordinates = (ref_begin, ref_end)
-						regions_dict[ref_coordinates].append(read_homopolymer)
+							ref_end = reference_pointer
 
-						ref_max = max(ref_max, ref_homopolymer)
-						read_max = max(read_max, read_homopolymer)
+							data = (ref_homopolymer, read_homopolymer, ref_letter)
+							if(freq_dict.has_key(data)):
+								freq_dict[data] += 1
+							else:
+								freq_dict[data] = 1
 
-						ref_begin = 0
-						ref_end = 0
+							ref_coordinates = (ref_begin, ref_end)
+							regions_dict[ref_coordinates].append(read_homopolymer)
 
-						read_homopolymer = 0
-						ref_homopolymer = 0
-						read_letter = ''
-						ref_letter = ''
+							ref_max = max(ref_max, ref_homopolymer)
+							read_max = max(read_max, read_homopolymer)
 
-			elif(cigar[cigar_pointer] == 'I'):
+							ref_begin = 0
+							ref_end = 0
 
-				if(state == State.off_off):
-					#print("OFF_OFF")
-					if(read[read_pointer] == read[read_pointer + 1]):
-						read_letter = read[read_pointer]
-						read_homopolymer += 1
-						state = State.on_off
+							read_homopolymer = 0
+							ref_homopolymer = 0
+							read_letter = ''
+							ref_letter = ''
 
-					read_pointer += 1
-					cigar_pointer += 1
-					# we have a homopolymer in the read, but not in the reference(or ref homopolymer ended)
-				elif(state == State.on_off):
-					#print("ON_OFF")
-					if(read[read_pointer] == read_letter):
-						read_homopolymer += 1
-						read_pointer += 1
-						cigar_pointer += 1
-					else:
-						state = State.off_off
-
-						data = (ref_homopolymer, read_homopolymer, read_letter)
-						if(freq_dict.has_key(data)):
-							freq_dict[data] += 1
+					elif(state == State.on_on):
+						#print("ON_ON")
+						if(sequence[sequence_pointer] == ref_letter):
+							ref_homopolymer += 1
 						else:
-							freq_dict[data] = 1
-
-						ref_coordinates = (ref_begin, ref_end)
-						regions_dict[ref_coordinates].append(read_homopolymer)
-
-						ref_max = max(ref_max, ref_homopolymer)
-						read_max = max(read_max, read_homopolymer)
-
-						ref_begin = 0
-						ref_end = 0
-
-						read_homopolymer = 0
-						ref_homopolymer = 0
-						read_letter = ''
-						ref_letter = ''
-
-				elif(state == State.off_on):
-					#print("OFF_ON")
-					if(read_homopolymer == 0 and read[read_pointer] == ref_letter):
-						read_letter = ref_letter
-						read_homopolymer += 1
-						state = State.on_on
+							state = State.on_off
+							ref_end = reference_pointer
+						cigar_pointer += 1
+						reference_pointer += 1
+						sequence_pointer += 1
+				else:
+					# S
 					read_pointer += 1
 					cigar_pointer += 1
 
-				elif(state == State.on_on):
-					#print("ON_ON")
-					if(read[read_pointer] == read_letter):
-						read_homopolymer += 1
-					else:
-						state = State.off_on
-					read_pointer += 1
-					cigar_pointer += 1
-
-
-			elif(cigar[cigar_pointer] == 'D'):
-				if(state == State.off_off):
-					#print("OFF_OFF")
-					if(genome[reference_pointer] == genome[reference_pointer + 1]):
-						ref_homopolymer += 1
-						ref_letter = genome[reference_pointer]
-						ref_begin = reference_pointer
-						state = State.off_on
-					reference_pointer += 1
-					cigar_pointer += 1
-					# we have a homopolymer in the read, but not in the reference(or ref homopolymer ended)
-				elif(state == State.on_off):
-					#print("ON_OFF")
-					if(ref_homopolymer == 0 and genome[reference_pointer] == read_letter):
-						ref_letter = read_letter
-						ref_homopolymer += 1
-						state = State.on_on
-						ref_begin = reference_pointer
-					reference_pointer += 1
-					cigar_pointer += 1
-
-				elif(state == State.off_on):
-					#rint("OFF_ON")
-					if(genome[reference_pointer] == ref_letter):
-						ref_homopolymer += 1
-						reference_pointer += 1
-						cigar_pointer += 1
-					else:
-						state = State.off_off
-
-						ref_end = reference_pointer
-
-						data = (ref_homopolymer, read_homopolymer, ref_letter)
-						if(freq_dict.has_key(data)):
-							freq_dict[data] += 1
-						else:
-							freq_dict[data] = 1
-
-						ref_coordinates = (ref_begin, ref_end)
-						regions_dict[ref_coordinates].append(read_homopolymer)
-
-						ref_max = max(ref_max, ref_homopolymer)
-						read_max = max(read_max, read_homopolymer)
-
-						ref_begin = 0
-						ref_end = 0
-
-						read_homopolymer = 0
-						ref_homopolymer = 0
-						read_letter = ''
-						ref_letter = ''
-
-				elif(state == State.on_on):
-					#print("ON_ON")
-					if(genome[reference_pointer] == ref_letter):
-						ref_homopolymer += 1
-					else:
-						state = State.on_off
-						ref_end = reference_pointer
-					cigar_pointer += 1
-					reference_pointer += 1
-			else:
-				# S
-				read_pointer += 1
-				cigar_pointer += 1
+		indent += len(sequence)
 
 	return read_max, regions_dict
