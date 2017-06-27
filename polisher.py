@@ -8,14 +8,6 @@ import readerrors as re
 out_cons_set = "consensus_predict.csv"
 out_freq_set = "consensus_error.csv"
 
-def genome_preprocessing(reference_file):
-
-	with open(reference_file) as f:
-		content = f.readlines()
-	content = [x.strip() for x in content]
-	genome=''.join(content[1:])
-	return genome
-
 def main(arguments):
 
 	parser = argparse.ArgumentParser(description=__doc__)
@@ -62,6 +54,7 @@ def main(arguments):
 	re.make_test_csv(regions_dict_1, read_max, "train.csv")
 	#re.make_test_csv(regions_dict_2, read_max, "test.csv")
 	re.make_test_csv(regions_dict_c, read_max, "predict.csv")
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

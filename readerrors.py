@@ -45,8 +45,9 @@ def genome_preprocessing(reference_file):
 
 	with open(reference_file) as f:
 		content = f.readlines()
+	content = [x for x in content if x[0] != '>']
 	content = [x.strip() for x in content]
-	genome=''.join(content[1:])
+	genome=''.join(content)
 	return genome
 
 def get_cigar_string(cigar_string):

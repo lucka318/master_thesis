@@ -8,8 +8,7 @@ import argparse
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.grid_search import GridSearchCV
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import GridSearchCV,train_test_split
 from sklearn.externals import joblib
 
 class_freq_n = 5
@@ -34,11 +33,11 @@ def trainSVM(train_data,var):
     print("Class frequencies:")
     print(class_freq)
 
-    #X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
-    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42)
+    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
+    #X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42)
     tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4], 'C': [1, 10, 100, 1000]}, {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
     svm = SVC()
-    clf = GridSearchCV(svm,tuned_parameters,iid=False)
+    clf = GridSearchCV(svm,tuned_parameters, n_jobs=12, error_score=0, scoring='f1', iid=False)
     clf.fit(X_train,Y_train.ravel())
 
     joblib.dump(clf,'classifiers/SVM.pkl')
@@ -55,8 +54,8 @@ def testSVM(test_data,var):
     class_freq = dict(zip(unique, counts))
     print(class_freq)
 
-    #_ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
-    _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42)
+    _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
+    #_ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42)
 
     clf = joblib.load('classifiers/SVM.pkl')
     print(clf.score(X_test,Y_test))
@@ -83,15 +82,15 @@ def trainRFC(train_data,var):
     print("Class frequencies:")
     print(class_freq)
 
-    #X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
-    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42)
+    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
+    #X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42)
     param_grid = {"n_estimators"      : [100,200,300],
            "criterion"         : ["gini"],
            "max_features"      : [3, 4, 5],
            "max_depth"         : [10, 12, 14],
            "min_samples_split" : [4, 5, 6]}
     rfc = RandomForestClassifier(oob_score = True)
-    clf = GridSearchCV(rfc,param_grid,iid=False)
+    clf = GridSearchCV(rfc,param_grid,n_jobs=12, error_score=0, scoring='f1',iid=False)
     clf.fit(X_train,Y_train.ravel())
 
     joblib.dump(clf,'classifiers/RFC.pkl')
@@ -108,8 +107,8 @@ def testRFC(test_data,var):
     class_freq = dict(zip(unique, counts))
     print(class_freq)
 
-    #_ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
-    _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42)
+    _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
+    #_ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42)
 
     clf = joblib.load('classifiers/RFC.pkl')
     print(clf.score(X_test,Y_test))
@@ -136,14 +135,14 @@ def trainGBC(train_data,var):
     print("Class frequencies:")
     print(class_freq)
 
-    #X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
-    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42)
+    X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42, stratify=Y_)
+    #X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42)
     gb_grid_params = {"n_estimators": [200,300,400],
              'learning_rate': [0.05, 0.02, 0.01],
              'max_depth': [4, 6, 8],
              'min_samples_leaf': [20, 50,100]}
     gb_gs = GradientBoostingClassifier()
-    clf = GridSearchCV(gb_gs,gb_grid_params,iid=False);
+    clf = GridSearchCV(gb_gs,gb_grid_params,n_jobs=12, error_score=0, scoring='f1',iid=False);
     clf.fit(X_train,Y_train.ravel())
 
     joblib.dump(clf,'classifiers/GBC.pkl')
@@ -160,8 +159,8 @@ def testGBC(test_data,var):
     class_freq = dict(zip(unique, counts))
     print(class_freq)
 
-    #_ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
-    _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42)
+    _ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42, stratify=Y_t)
+    #_ , X_test, _ , Y_test = train_test_split(X_t, Y_t, test_size=0.99, random_state=42)
 
     clf = joblib.load('classifiers/GBC.pkl')
     print(clf.score(X_test,Y_test))
@@ -176,19 +175,19 @@ def predictGBC(predict_data):
 
     return predict_data
 
-def main(arguments):
+# def main(arguments):
 
-  train_file = open("train.csv")
-  train_data = np.genfromtxt(train_file, dtype=int, delimiter=',')
-  test_file = open("test.csv")
-  test_data = np.genfromtxt(test_file, dtype=int, delimiter=',')
+#   train_file = open("train.csv")
+#   train_data = np.genfromtxt(train_file, dtype=int, delimiter=',')
+#   test_file = open("test.csv")
+#   test_data = np.genfromtxt(test_file, dtype=int, delimiter=',')
 
-  predict_file = open("predict.csv")
-  predict_data = np.genfromtxt(predict_file, dtype=int, delimiter=',')
-  predict_data = trainSVM(train_data,test_data,predict_data)
+#   predict_file = open("predict.csv")
+#   predict_data = np.genfromtxt(predict_file, dtype=int, delimiter=',')
+#   predict_data = trainSVM(train_data,test_data,predict_data)
 
-  with open("predict_SVM.csv",'w') as f:
-        np.savetxt(f, predict_data.astype(int), fmt='%i', delimiter=',')
+#   with open("predict_SVM.csv",'w') as f:
+#         np.savetxt(f, predict_data.astype(int), fmt='%i', delimiter=',')
 
   # predict_file = open("predict.csv")
   # predict_data = np.genfromtxt(predict_file, dtype=int, delimiter=',')
@@ -205,5 +204,5 @@ def main(arguments):
   #       np.savetxt(f, predict_data.astype(int), fmt='%i', delimiter=',')
 
 
-if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+# if __name__ == '__main__':
+#   sys.exit(main(sys.argv[1:]))
