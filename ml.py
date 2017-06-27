@@ -37,7 +37,7 @@ def trainSVM(train_data,var):
     #X_train, X_test, Y_train, Y_test = train_test_split(X_, Y_, test_size=0.5, random_state=42)
     tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4], 'C': [1, 10, 100, 1000]}, {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
     svm = SVC()
-    clf = GridSearchCV(svm,tuned_parameters, n_jobs=12, error_score=0, scoring='f1', iid=False)
+    clf = GridSearchCV(svm,tuned_parameters, n_jobs=12, error_score=0, iid=False)
     clf.fit(X_train,Y_train.ravel())
 
     joblib.dump(clf,'classifiers/SVM.pkl')
@@ -90,7 +90,7 @@ def trainRFC(train_data,var):
            "max_depth"         : [10, 12, 14],
            "min_samples_split" : [4, 5, 6]}
     rfc = RandomForestClassifier(oob_score = True)
-    clf = GridSearchCV(rfc,param_grid,n_jobs=12, error_score=0, scoring='f1',iid=False)
+    clf = GridSearchCV(rfc,param_grid,n_jobs=12, error_score=0,iid=False)
     clf.fit(X_train,Y_train.ravel())
 
     joblib.dump(clf,'classifiers/RFC.pkl')
