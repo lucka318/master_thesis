@@ -1,14 +1,11 @@
 import sys
 import numpy as np
-import pysam
-import re
 import pprint
 import argparse
-import time
 import csv
 import numpy as np
-import time
 from collections import defaultdict
+from Bio import SeqIO
 
 def genome_preprocessing(reference_file):
 
