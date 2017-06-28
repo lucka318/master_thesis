@@ -48,7 +48,7 @@ def main(arguments):
 	for i in range(0,x_coord):
 		homopolymer_coord_dict[homopolymer_coord[i][0]] = Y_[i][0]
 
-	fasta_sequences = SeqIO.parse(open(ref),'fasta')
+	fasta_sequences = SeqIO.parse(open(args.con),'fasta')
 
 	l = open(args.out, 'w')
 	indent = 0
