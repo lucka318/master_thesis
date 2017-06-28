@@ -51,29 +51,30 @@ def main(arguments):
 	for i in range(0,x_coord):
 		homopolymer_coord_dict[homopolymer_coord[i][0]] = Y_[i][0]
 
-	name,genome = genome_preprocessing(args.con)
-	# print(genome[0:15])
-	# print(len(genome))
-
-	new_gen = ''
-	letter = ''
-	i = 0
-	while(i < len(genome)):
-		letter = genome[i]
-		if(homopolymer_coord_dict.has_key(i)):
-			val = homopolymer_coord_dict[i]
-			for j in range(0,val):
-				new_gen+=letter
-			while(genome[i] == letter):
-				i+=1
-		else:
-			new_gen+=genome[i]
-			i+=1
+	fasta_sequences = SeqIO.parse(open(ref),'fasta')
 
 	l = open(args.out, 'w')
-	print(name)
-	l.write(name + '\n')
-	l.write(new_gen)
+	indent = 0
+	for seq in fasta_sequences:
+		sequence = str(seq.seq)
+		new_gen = ''
+		letter = ''
+		i = 0
+		while(i < len(sequence)):
+			letter = sequence[i]
+			if(homopolymer_coord_dict.has_key(i + indent)):
+				val = homopolymer_coord_dict[i + indent]
+				for j in range(0,val):
+					new_gen+=letter
+				while(sequence[i] == letter):
+					i+=1
+			else:
+				new_gen+=sequence[i]
+				i+=1
+		indent += len(sequence)
+		l.write('>' + seq.description + '\n')
+		l.write(new_gen + '\n')
+
 	l.close()
 	print(len(new_gen))
 
