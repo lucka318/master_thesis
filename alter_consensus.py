@@ -63,7 +63,7 @@ def main(arguments):
 				val = homopolymer_coord_dict[i + indent]
 				for j in range(0,val):
 					new_gen+=letter
-				while(sequence[i] == letter):
+				while(i < len(sequence) and sequence[i] == letter):
 					i+=1
 			else:
 				new_gen+=sequence[i]
