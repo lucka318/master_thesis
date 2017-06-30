@@ -44,16 +44,18 @@ def main(arguments):
 
 	args = parser.parse_args(arguments)
 
-	read_max_1, regions_dict_1 = re.readerrors(args.ref1, args.reads1)
+	read_max_1, ref_max_1, regions_dict_1, freq_dict_1 = re.readerrors(args.ref1, args.reads1)
 
 	#read_max_2, regions_dict_2 = re.readerrors(args.ref2, args.reads2)
 
-	read_max_c, regions_dict_c = re.readerrors(args.cons, args.cons_reads)
+	read_max_c, ref_max_c, regions_dict_c, freq_dict_c = re.readerrors(args.cons, args.cons_reads)
 
-	read_max = 50
 	re.make_test_csv(regions_dict_1, read_max, "train.csv")
 	#re.make_test_csv(regions_dict_2, read_max, "test.csv")
 	re.make_test_csv(regions_dict_c, read_max, "predict.csv")
+
+	re.make_freq_csv(freq_dict_1, read_max, ref_max_1, "freq_ref.csv")
+	re.make_freq_csv(freq_dict_c, read_max, ref_max_c, "freq_cons.csv")
 
 
 if __name__ == '__main__':

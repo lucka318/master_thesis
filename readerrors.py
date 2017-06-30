@@ -425,4 +425,4 @@ def readerrors(ref, reads):
 
 		indent += len(sequence)
 
-	return read_max, regions_dict
+	return read_max, ref_max, regions_dict, freq_dict
