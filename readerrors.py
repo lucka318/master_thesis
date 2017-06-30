@@ -11,7 +11,7 @@ class State:
 	off_on = 2
 	off_off = 3
 
-def make_freq_csv(freq_dict, read_max, ref_max, out):
+def make_freq_csv_perc(freq_dict, read_max, ref_max, out):
 	#print(freq_dict)
 	freq_cnt = np.zeros(shape=(ref_max + 1, read_max + 1), dtype=float)
 	total = 0
@@ -25,6 +25,17 @@ def make_freq_csv(freq_dict, read_max, ref_max, out):
 	freq_cnt = np.divide(freq_cnt, float(total))
 	with open(out,'w') as f:
 		np.savetxt(f, freq_cnt.astype(float), fmt='%2.5f', delimiter=',')
+
+def make_freq_csv(freq_dict, read_max, ref_max, out):
+	#print(freq_dict)
+	freq_cnt = np.zeros(shape=(ref_max + 1, read_max + 1), dtype=int)
+	for key, val in freq_dict.items():
+		ref_len = key[0]
+		read_len = key[1]
+		letter = key[2]
+		freq_cnt[ref_len][read_len] += val
+	with open(out,'w') as f:
+		np.savetxt(f, freq_cnt.astype(int), fmt='%i', delimiter=',')
 
 def make_test_csv(regions_dict, read_max, out):
 	size = len(regions_dict)
