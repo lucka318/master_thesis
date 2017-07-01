@@ -54,8 +54,11 @@ def main(arguments):
 	#re.make_test_csv(regions_dict_2, read_max, "test.csv")
 	re.make_test_csv(regions_dict_c, read_max, "predict.csv")
 
-	re.make_freq_csv(freq_dict_1, read_max, ref_max_1, "freq_ref.csv")
-	re.make_freq_csv(freq_dict_c, read_max, ref_max_c, "freq_cons.csv")
+	re.make_freq_csv_perc(freq_dict_1, read_max_1, ref_max_1, "freq_ref_perc.csv")
+	re.make_freq_csv_perc(freq_dict_c, read_max_c, ref_max_c, "freq_cons_perc.csv")
+
+	re.make_freq_csv(freq_dict_1, read_max_1, ref_max_1, "freq_ref.csv")
+	re.make_freq_csv(freq_dict_c, read_max_c, ref_max_c, "freq_cons.csv")
 
 
 if __name__ == '__main__':

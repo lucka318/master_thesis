@@ -21,7 +21,6 @@ def make_freq_csv_perc(freq_dict, read_max, ref_max, out):
 		letter = key[2]
 		freq_cnt[ref_len][read_len] += val
 		total += val
-	print(total)
 	freq_cnt = np.divide(freq_cnt, float(total))
 	with open(out,'w') as f:
 		np.savetxt(f, freq_cnt.astype(float), fmt='%2.5f', delimiter=',')
@@ -46,8 +45,7 @@ def make_test_csv(regions_dict, read_max, out):
 			break
 		length = key[1] - key[0]
 		for i in val:
-			if(i < read_max):
-				freq_cnt[cnt][i] += 1
+			freq_cnt[cnt][i] += 1
 		freq_cnt[cnt][read_max + 1] = length
 		freq_cnt[cnt][read_max + 2] = key[0]
 		freq_cnt[cnt][read_max + 3] = key[1]
