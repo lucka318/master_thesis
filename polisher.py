@@ -50,12 +50,13 @@ def main(arguments):
 
 	read_max_c, ref_max_c, regions_dict_c, freq_dict_c = re.readerrors(args.cons, args.cons_reads)
 
+	read_max = max(read_max_1, read_max_c, ref_max_1, ref_max_c)
 	re.make_test_csv(regions_dict_1, read_max, "train.csv")
 	#re.make_test_csv(regions_dict_2, read_max, "test.csv")
 	re.make_test_csv(regions_dict_c, read_max, "predict.csv")
 
-	re.make_freq_csv(freq_dict_1, read_max, ref_max_1, "freq_ref.csv")
-	re.make_freq_csv(freq_dict_c, read_max, ref_max_c, "freq_cons.csv")
+	re.make_freq_csv(freq_dict_1, read_max_1, ref_max_1, "freq_ref.csv")
+	re.make_freq_csv(freq_dict_c, read_max_c, ref_max_c, "freq_cons.csv")
 
 
 if __name__ == '__main__':
