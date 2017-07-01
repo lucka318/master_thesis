@@ -44,7 +44,7 @@ def make_test_csv(regions_dict, read_max, out):
 		if(cnt >= size):
 			break
 		length = key[1] - key[0]
-		for i in val:
+		for i in [x for x in val if x <= read_max]:
 			freq_cnt[cnt][i] += 1
 		freq_cnt[cnt][read_max + 1] = length
 		freq_cnt[cnt][read_max + 2] = key[0]
